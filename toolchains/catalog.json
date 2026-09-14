@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "tools": {
+    "kuna": {
+      "command": "kuna",
+      "versionArgs": [
+        "--version"
+      ],
+      "companions": [
+        "decomp_dbg",
+        "slacomp"
+      ],
+      "source": "https://github.com/Noelo-Lab/kuna"
+    },
+    "rasc": {
+      "command": "rasc",
+      "versionArgs": [
+        "--version"
+      ],
+      "source": "https://github.com/TsingShui/rasc"
+    },
+    "ecapture": {
+      "command": "ecapture",
+      "versionArgs": [
+        "version"
+      ],
+      "source": "https://github.com/gojue/ecapture"
+    },
+    "tshark": {
+      "command": "tshark",
+      "versionArgs": [
+        "--version"
+      ],
+      "source": "https://github.com/wireshark/wireshark"
+    }
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "name": "pi-re",
+  "version": "0.4.0",
+  "license": "Apache-2.0",
+  "private": true,
+  "description": "Pi tools for reverse analysis.",
+  "keywords": ["pi-package"],
+  "type": "module",
+  "scripts": {
+    "check": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "@earendil-works/pi-coding-agent": "*"
+  },
+  "devDependencies": {
+    "@earendil-works/pi-coding-agent": "*",
+    "typescript": "^5.0.0"
+  },
+  "pi": {
+    "extensions": ["./extensions"],
+    "skills": ["./skills"]
+  }
+}
