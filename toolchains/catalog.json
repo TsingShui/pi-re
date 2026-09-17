@@ -12,6 +12,13 @@
       ],
       "source": "https://github.com/Noelo-Lab/kuna"
     },
+    "angr": {
+      "command": "angr",
+      "versionArgs": [
+        "--version"
+      ],
+      "source": "https://github.com/angr/angr"
+    },
     "rasc": {
       "command": "rasc",
       "versionArgs": [

@@ -1,10 +1,10 @@
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import type { ToolchainCatalog, ToolDefinition } from "./catalog.js";
 
-export interface DoctorReport {
+export interface ProbeReport {
   lines: string[];
-  /** True when every configured tool resolved. */
-  ok: boolean;
+  /** Catalog entries that did not resolve or have a missing companion. */
+  missing: string[];
 }
 
 function firstLine(text: string): string {
@@ -48,19 +48,14 @@ async function inspectTool(
 export async function inspectTools(
   pi: ExtensionAPI,
   catalog: ToolchainCatalog,
-  only?: string,
-): Promise<DoctorReport> {
-  if (only && !catalog.tools[only]) {
-    throw new Error(`Unknown tool: ${only} (see /repi-toolchain)`);
-  }
-
-  const names = only ? [only] : Object.keys(catalog.tools);
+): Promise<ProbeReport> {
+  const names = Object.keys(catalog.tools);
   const lines: string[] = [];
-  let ok = true;
+  const missing: string[] = [];
 
   for (const name of names) {
-    if (!(await inspectTool(pi, name, catalog.tools[name], lines))) ok = false;
+    if (!(await inspectTool(pi, name, catalog.tools[name], lines))) missing.push(name);
   }
 
-  return { lines, ok };
+  return { lines, missing };
 }
