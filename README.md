@@ -4,12 +4,8 @@
 
 `pi-re` is an installable Pi package that keeps a reverse-engineering toolchain
 discoverable and checkable. It ships a small catalog of open-source, CLI-native
-tools plus one command that checks what resolves on this machine and lets the
-user choose which missing tools the agent should install.
-
-The browser application the practice is named after is a separate repository,
-[`TsingShui/Repi`](https://github.com/TsingShui/Repi): a tablet-first workspace
-that decompiles a binary locally in the tab.
+tools plus commands to start analysis, install missing tools, and inspect local
+usage counts.
 
 ## Quick start
 
@@ -56,9 +52,12 @@ open-source, CLI-native, and useful without a GUI.
 | --- | --- |
 | `/repi <target or request>` | Start an analysis through the bundled `pi-re` Skill. |
 | `/repi-install` | Check the toolchain, select missing tools, and ask the agent to install and verify them. |
+| `/repi-stats` | Show local invocation counts and last-use times for every catalog tool. |
 
 The bundled `pi-re` Skill routes reverse-engineering tasks to the right catalog
-tool and loads detailed Kuna or angr guidance when needed.
+tool and loads detailed Kuna or angr guidance when needed. Catalog-tool commands
+run through Pi's shell tools are counted locally in `.pi/pi-re-usage.jsonl`;
+`/repi-stats` reads that file. Nothing is uploaded.
 
 ## License
 
@@ -66,6 +65,4 @@ Apache-2.0 — see [LICENSE](./LICENSE) and [NOTICE](./NOTICE).
 
 This package redistributes no third-party software: it describes tools and checks
 that they resolve. The tools it names are separate projects under their own
-licences, and the application that redistributes two of them — Kuna and Rasc,
-each with its licence and notice beside its artifact — lists them at
-[/#/licenses](https://tsingshui.github.io/Repi/#/licenses).
+licences.

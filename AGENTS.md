@@ -8,12 +8,6 @@ An installable Pi package: one flat catalog of open-source, CLI-native
 reverse-engineering tools (`toolchains/catalog.json`), plus commands that start
 analysis and install missing tools (`extensions/`). It runs inside an agent.
 
-The browser application that shares the name is a **separate repository**,
-[`TsingShui/Repi`](https://github.com/TsingShui/Repi). The two were one repository
-until they were split: the application took the name Repi and the package is
-`pi-re`. Nothing here should start depending on it, and the reason the split
-exists is the first rule below.
-
 The earlier spelling `re-pi` is retired — do not reintroduce it.
 
 ## Commands
@@ -21,22 +15,28 @@ The earlier spelling `re-pi` is retired — do not reintroduce it.
 | Command | What it does |
 | --- | --- |
 | `npm run check` | `tsc --noEmit` over `extensions/**/*.ts`. Zero type errors is the bar, not a target. |
+| `npm test` | Run the tool-usage parser and persistence checks. |
 | `/repi <target or request>` | In Pi: start an analysis through the bundled `pi-re` Skill. |
 | `/repi-install` | In Pi: probe the catalog, let the user select missing tools, then ask the agent to install and verify them. |
+| `/repi-stats` | In Pi: show local invocation counts for each catalog tool. |
 
-`npm run check` is the whole of the automated checking here: an entry is verified
-against the machine it runs on, and no CI runner has these tools installed. What
-can be checked without them is the catalog's shape, and that happens at load time.
+`npm run check` and `npm test` are the automated checks here. Tool availability
+is verified against the machine it runs on; no CI runner is expected to have the
+catalog installed. The catalog shape is checked at load time.
 
 ## Layout
 
-- `extensions/index.ts` — the extension: registers `/repi` and `/repi-install`.
+- `extensions/index.ts` — the extension: registers `/repi`, `/repi-install`, and
+  `/repi-stats`, gates network research during analysis, and records catalog-tool
+  invocations.
 - `extensions/toolchain/catalog.ts` — loads `toolchains/catalog.json` and refuses a
   catalog that is malformed: right schema version, and every entry with a
   `command`, `versionArgs`, and an `https://github.com/` `source`.
 - `extensions/toolchain/probe.ts` — the probes. Version first, then each
   companion, because a tool can be installed and unusable without its sibling
   binaries and `--version` cannot see that.
+- `extensions/toolchain/usage.ts` — recognizes catalog commands at shell command
+  positions, appends local usage events, and summarizes them for `/repi-stats`.
 - `toolchains/catalog.json` — the catalog. Add a tool here, not in code.
 - `skills/pi-re/` — the single toolchain Skill; detailed Kuna and angr guidance
   lives under its `references/` directory.
@@ -45,9 +45,7 @@ can be checked without them is the catalog's shape, and that happens at load tim
 
 **`pi install` stays cheap.** This package has no runtime dependencies and no
 install hooks: it uses Node builtins and what Pi provides. `/repi-install` acts
-only when the user selects and confirms missing tools. That is why the browser
-application is a separate repository — a web toolchain in this package would be
-downloaded by every agent that installs a catalog command.
+only when the user selects and confirms missing tools.
 
 **Keep Android analysis code-focused.** `pi-re` does not decode resource tables,
 layouts, or complete APK resources, and it never rebuilds, resigns, reinstalls, or

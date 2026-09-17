@@ -1,6 +1,13 @@
-import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
+import { CONFIG_DIR_NAME, type ExtensionAPI } from "@earendil-works/pi-coding-agent";
+import { join } from "node:path";
 import { loadCatalog } from "./toolchain/catalog.js";
 import { inspectTools } from "./toolchain/probe.js";
+import {
+  detectToolInvocations,
+  formatToolUsage,
+  readToolUsage,
+  recordToolInvocations,
+} from "./toolchain/usage.js";
 
 const networkResearchTools = new Set([
   "web_search",
@@ -12,6 +19,7 @@ const networkResearchTools = new Set([
 export default function registerPiRe(pi: ExtensionAPI): void {
   const catalog = loadCatalog();
   let analysisActive = false;
+  const usagePath = (cwd: string) => join(cwd, CONFIG_DIR_NAME, "pi-re-usage.jsonl");
 
   pi.on("tool_call", async (event, ctx) => {
     if (!analysisActive || !networkResearchTools.has(event.toolName)) return;
@@ -35,6 +43,19 @@ export default function registerPiRe(pi: ExtensionAPI): void {
     }
   });
 
+  pi.on("tool_result", (event, ctx) => {
+    if (event.toolName !== "bash" && event.toolName !== "powershell") return;
+    const command = event.input.command;
+    if (typeof command !== "string") return;
+    const tools = detectToolInvocations(command, catalog);
+    if (tools.length === 0) return;
+    try {
+      recordToolInvocations(usagePath(ctx.cwd), tools);
+    } catch (error) {
+      ctx.ui.notify(`Could not record pi-re usage: ${String(error)}`, "warning");
+    }
+  });
+
   pi.on("agent_settled", () => {
     analysisActive = false;
   });
@@ -54,6 +75,18 @@ export default function registerPiRe(pi: ExtensionAPI): void {
       } catch (error) {
         analysisActive = false;
         throw error;
+      }
+    },
+  });
+
+  pi.registerCommand("repi-stats", {
+    description: "Show local pi-re toolchain usage counts.",
+    handler: async (_args, ctx) => {
+      try {
+        const usage = readToolUsage(usagePath(ctx.cwd), catalog);
+        ctx.ui.notify(formatToolUsage(usage), "info");
+      } catch (error) {
+        ctx.ui.notify(error instanceof Error ? error.message : String(error), "error");
       }
     },
   });
